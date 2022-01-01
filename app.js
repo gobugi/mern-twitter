@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const db = require("./config/keys").mongoURI;
 const users = require("./routes/api/users");
 const tweets = require("./routes/api/tweets");
-const User = require("./models/User");
+// const User = require("./models/User");
 const bodyParser = require("body-parser");
 const passport = require("passport");
 
@@ -34,5 +34,4 @@ app.use("/api/users", users);
 app.use("/api/tweets", tweets);
 
 const port = process.env.PORT || 5000;
-
 app.listen(port, () => {console.log(`Listening on port ${port}`)});
