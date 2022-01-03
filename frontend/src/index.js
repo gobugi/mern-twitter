@@ -1,30 +1,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter } from 'react-router-dom';
-import { Provider as ReduxProvider } from 'react-redux';
-import './index.css';
-import App from './App';
-import configureStore from './store';
+import Root from './components/root';
+import configureStore from './store/store';
+import jwt_decode from 'jwt-decode';
 
-const store = configureStore();
+import { setAuthToken } from './util/session_api_util';
+import { logout } from './actions/session_actions';
 
-if (process.env.NODE_ENV !== "production") {
-  window.store = store;
-}
+document.addEventListener('DOMContentLoaded', () => {
+  let store;
 
-function Root() {
-  return (
-    <ReduxProvider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ReduxProvider>
-  );
-}
+  if (localStorage.jwtToken) {
+    setAuthToken(localStorage.jwtToken);
 
-ReactDOM.render(
-  <React.StrictMode>
-    <Root />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+    const decodedUser = jwt_decode(localStorage.jwtToken);
+    const preloadedState = { session: { isAuthenticated: true, user: decodedUser } };
+    
+    store = configureStore(preloadedState);
+
+    const currentTime = Date.now() / 1000;
+
+    if (decodedUser.exp < currentTime) {
+      store.dispatch(logout());
+      window.location.href = '/login';
+    }
+  } else {
+    store = configureStore({});
+  }
+  const root = document.getElementById('root');
+
+  ReactDOM.render(<Root store={store} />, root);
+});
